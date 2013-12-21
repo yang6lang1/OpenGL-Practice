@@ -1,0 +1,16 @@
+#version 330
+
+layout(location = 0) in vec4 position;
+layout(location = 1) in vec4 color;
+
+smooth out vec4 theColor;
+uniform vec2 offset;
+uniform vec2 offset2;
+
+void main()
+{
+	vec4 totalOffset = vec4(offset.x, offset.y, 0.0, 0.0);
+	vec4 totalOffset2 = vec4(offset2.x, offset2.y, 0.0,0.0);
+    gl_Position = position + totalOffset + totalOffset2;
+    theColor = color;
+}
