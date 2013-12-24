@@ -3,15 +3,17 @@
 smooth in vec4 theColor;
 
 out vec4 outputColor;
+uniform float winWidth;
+uniform float winHeight;
 
 void main() {
 
-    float lerpValueX = 1.0 - gl_FragCoord.x / 800.0f;
+    float lerpValueX = 1.0 - gl_FragCoord.x / winWidth;
     
     vec4 outputColorX = mix(vec4(1.0f, 1.0f, 1.0f, 1.0f),
         vec4(1.0f, 1.0f, 1.0f, 0.0f), lerpValueX);
 
-    float lerpValueY = 1.0f -gl_FragCoord.y / 600.0f;
+    float lerpValueY = 1.0f -gl_FragCoord.y / winHeight;
 
     vec4 outputColorY = mix(vec4(1.0f, 1.0f, 1.0f, 1.0f),
         vec4(1.0f, 1.0f, 1.0f, 0.0f), lerpValueY);

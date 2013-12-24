@@ -13,5 +13,9 @@ void main()
     float currTime = mod(time, fragLoopDuration);
     float currLerp = currTime / fragLoopDuration;
     
+    const float pi = 3.1415926f;
+
+	currLerp = sin(pi * currLerp);
+
     outputColor = mix(firstColor, secondColor, currLerp);
 }

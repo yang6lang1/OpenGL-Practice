@@ -30,7 +30,7 @@ import static org.lwjgl.opengl.GL20.glCompileShader;
 import static org.lwjgl.opengl.GL20.glCreateProgram;
 import static org.lwjgl.opengl.GL20.glCreateShader;
 import static org.lwjgl.opengl.GL20.glDeleteShader;
-import static org.lwjgl.opengl.GL20.glDetachShader;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
@@ -265,9 +265,15 @@ public class PlayWithColors {
 	shaderList.add(loadShader(GL_VERTEX_SHADER, vertexShaderFilePath));
 	shaderList.add(loadShader(GL_FRAGMENT_SHADER, fragShaderFilePath));
 
-
 	programObject = createProgram(shaderList);
 
+	int winWidth = glGetUniformLocation(programObject, "winWidth");
+	int winHeight = glGetUniformLocation(programObject, "winHeight");
+	glUseProgram(programObject);
+	glUniform1f(winWidth, WIDTH);
+	glUniform1f(winHeight, HEIGHT);
+	glUseProgram(0);
+	
 	for(Integer entry : shaderList){
 	  glDeleteShader(entry);
 	}

@@ -1,7 +1,10 @@
-package tutorials.chapter3;
+package tutorials.chapter4;
 
+import static org.lwjgl.opengl.GL11.GL_BACK;
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_CW;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
@@ -11,9 +14,11 @@ import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glCullFace;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glFrontFace;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STREAM_DRAW;
@@ -40,7 +45,6 @@ import static org.lwjgl.opengl.GL20.glGetShaderi;
 import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glLinkProgram;
 import static org.lwjgl.opengl.GL20.glShaderSource;
-import static org.lwjgl.opengl.GL20.glUniform1f;
 import static org.lwjgl.opengl.GL20.glUniform2f;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
@@ -63,12 +67,12 @@ import org.lwjgl.opengl.DisplayMode;
 import utility.Log;
 import utility.TXTReader;
 
-public class VertCalcOffset {
+public class OrthoCube {
 
   // Whether to enable VSync in hardware.
   public static final boolean VSYNC = true;
-  public static final String vertexShaderFilePath = "/Data/tut03/offsetComputingVertexShader.txt";
-  public static final String fragShaderFilePath = "/Data/tut03/fragmentShader.txt";
+  public static final String vertexShaderFilePath = "/Data/tut04/orthoWithOffset.txt";
+  public static final String fragShaderFilePath = "/Data/tut04/standardColors.txt";
 
   // Width and height of our window
   public static final int WIDTH = 800;
@@ -85,7 +89,7 @@ public class VertCalcOffset {
   private long lastTime = 0;
 
   public static void main(String[] args) throws LWJGLException {
-	new VertCalcOffset().start();
+	new OrthoCube().start();
   }
 
   // Start our game
@@ -208,23 +212,18 @@ public class VertCalcOffset {
 
 	vao = glGenVertexArrays();
 	glBindVertexArray(vao);
+	
+	//The glEnable function is a multi-purpose tool. glEnable is used to set a lot of binary on/off
+	//flags that are part of OpenGL's state to he "on" position. Similarly to glDisable.
+	//GL_CULL_FACE flag, when enabled, tells OpenGL to activate face culling.
+	//Face culling is a way of telling OpenGL not to draw the sides of an object that you cannot see.
+	glEnable(GL_CULL_FACE);
+	//The glCullFace function defines which side, front or back, gets culled(don't draw). 
+	glCullFace(GL_BACK);
+	//The glFrontFace defines which winding order, clockwise or counter-clockwise, 
+	//is considered to be the “front” side of the triangle. 
+	glFrontFace(GL_CW);
   }
-
-  /**This is the triangle data we want to transfer to OpenGL*/
-  public static final float[] vertexPositions = { 
-	0.0f,    0.5f, 0.0f, 1.0f,
-	0.5f, -0.366f, 0.0f, 1.0f,
-	-0.5f, -0.366f, 0.0f, 1.0f,
-	-1f,    0f, 0.0f, 1.0f,
-	-0.5f, 0f, 0.0f, 1.0f,
-	-0.5f, 0.5f, 0.0f, 1.0f,
-	1.0f,    0.0f, 0.0f, 1.0f,
-	0.0f,    1.0f, 0.0f, 1.0f,
-	0.0f,    0.0f, 1.0f, 1.0f,
-	1.0f,    0.0f, 0.0f, 1.0f,
-	0.0f,    1.0f, 0.0f, 1.0f,
-	0.0f,    0.0f, 1.0f, 1.0f
-  };
 
   /**
    * Even though we have this data, OpenGL cannot use it directly. Therefore, the first step is to 
@@ -237,8 +236,8 @@ public class VertCalcOffset {
 	positionBufferObject = glGenBuffers();
 
 	glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject);
-	FloatBuffer buf = BufferUtils.createFloatBuffer(vertexPositions.length);
-	for(float i : vertexPositions){
+	FloatBuffer buf = BufferUtils.createFloatBuffer(vertexData.length);
+	for(float i : vertexData){
 	  buf.put(i);
 	}
 	buf.position(0);
@@ -248,10 +247,8 @@ public class VertCalcOffset {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
-  public int timeLocation;
-  public int offsetLocation2;
-  public int loopDurationLocation;
-  
+  int offsetLocation;
+
   /**A program object in OpenGL contains code for all of the shaders to be used for rendering*/
   private void initializeProgram() {
 	List<Integer> shaderList = new ArrayList<Integer>();
@@ -265,17 +262,13 @@ public class VertCalcOffset {
 	 * Much like with attributes, there is an index that refers to a specific uniform value. 
 	 * Unlike attributes, you cannot set this location yourself; you must query it.
 	 * */
-	timeLocation = glGetUniformLocation(programObject, "time");
-	offsetLocation2 = glGetUniformLocation(programObject, "offset2");
+	offsetLocation = glGetUniformLocation(programObject, "offset");
 
-	loopDurationLocation = glGetUniformLocation(programObject, "loopDuration");
-	glUseProgram(programObject);
-	glUniform1f(loopDurationLocation, 5.0f);
-	glUseProgram(0);
-	
 	for(Integer entry : shaderList){
 	  glDeleteShader(entry);
 	}
+
+
   }
 
   public int positionBufferObject = 0;
@@ -288,19 +281,16 @@ public class VertCalcOffset {
 
 	glUseProgram(programObject);
 
-	glUniform1f(timeLocation, elapsedTime/1000f);
-	glUniform2f(offsetLocation2, 0.0f,0f);
+	glUniform2f(offsetLocation, 0.5f, 0.25f);
 
+	long colorData = (vertexData.length / 2) * 4;
 	glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(0, 4, GL_FLOAT, false, 0, 0);
-	glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, 96);
+	glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, colorData);
 
-	glUniform1f(loopDurationLocation, 5.0f);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glUniform1f(loopDurationLocation, 2.5f);
-	glDrawArrays(GL_TRIANGLES, 3, 3);
+	glDrawArrays(GL_TRIANGLES, 0, (vertexData.length / 2));
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -361,4 +351,105 @@ public class VertCalcOffset {
 
 	return program;
   }
+  
+  public static final float[] vertexData = {
+	 0.25f,  0.25f, 0.75f, 1.0f,
+	 0.25f, -0.25f, 0.75f, 1.0f,
+	-0.25f,  0.25f, 0.75f, 1.0f,
+
+	 0.25f, -0.25f, 0.75f, 1.0f,
+	-0.25f, -0.25f, 0.75f, 1.0f,
+	-0.25f,  0.25f, 0.75f, 1.0f,
+
+	 0.25f,  0.25f, -0.75f, 1.0f,
+	-0.25f,  0.25f, -0.75f, 1.0f,
+	 0.25f, -0.25f, -0.75f, 1.0f,
+
+	 0.25f, -0.25f, -0.75f, 1.0f,
+	-0.25f,  0.25f, -0.75f, 1.0f,
+	-0.25f, -0.25f, -0.75f, 1.0f,
+
+	-0.25f,  0.25f,  0.75f, 1.0f,
+	-0.25f, -0.25f,  0.75f, 1.0f,
+	-0.25f, -0.25f, -0.75f, 1.0f,
+
+	-0.25f,  0.25f,  0.75f, 1.0f,
+	-0.25f, -0.25f, -0.75f, 1.0f,
+	-0.25f,  0.25f, -0.75f, 1.0f,
+
+	 0.25f,  0.25f,  0.75f, 1.0f,
+	 0.25f, -0.25f, -0.75f, 1.0f,
+	 0.25f, -0.25f,  0.75f, 1.0f,
+
+	 0.25f,  0.25f,  0.75f, 1.0f,
+	 0.25f,  0.25f, -0.75f, 1.0f,
+	 0.25f, -0.25f, -0.75f, 1.0f,
+
+	 0.25f,  0.25f, -0.75f, 1.0f,
+	 0.25f,  0.25f,  0.75f, 1.0f,
+	-0.25f,  0.25f,  0.75f, 1.0f,
+
+	 0.25f,  0.25f, -0.75f, 1.0f,
+	-0.25f,  0.25f,  0.75f, 1.0f,
+	-0.25f,  0.25f, -0.75f, 1.0f,
+
+	 0.25f, -0.25f, -0.75f, 1.0f,
+	-0.25f, -0.25f,  0.75f, 1.0f,
+	 0.25f, -0.25f,  0.75f, 1.0f,
+
+	 0.25f, -0.25f, -0.75f, 1.0f,
+	-0.25f, -0.25f, -0.75f, 1.0f,
+	-0.25f, -0.25f,  0.75f, 1.0f,
+
+
+
+
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+
+	0.8f, 0.8f, 0.8f, 1.0f,
+	0.8f, 0.8f, 0.8f, 1.0f,
+	0.8f, 0.8f, 0.8f, 1.0f,
+
+	0.8f, 0.8f, 0.8f, 1.0f,
+	0.8f, 0.8f, 0.8f, 1.0f,
+	0.8f, 0.8f, 0.8f, 1.0f,
+
+	0.0f, 1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
+
+	0.0f, 1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
+	0.0f, 1.0f, 0.0f, 1.0f,
+
+	0.5f, 0.5f, 0.0f, 1.0f,
+	0.5f, 0.5f, 0.0f, 1.0f,
+	0.5f, 0.5f, 0.0f, 1.0f,
+
+	0.5f, 0.5f, 0.0f, 1.0f,
+	0.5f, 0.5f, 0.0f, 1.0f,
+	0.5f, 0.5f, 0.0f, 1.0f,
+
+	1.0f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
+
+	1.0f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
+	1.0f, 0.0f, 0.0f, 1.0f,
+
+	0.0f, 1.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
+
+	0.0f, 1.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
+	0.0f, 1.0f, 1.0f, 1.0f,
+};
 }
