@@ -1,4 +1,4 @@
-package game;
+package tutorials.chapter3;
 
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -15,9 +15,8 @@ import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glViewport;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL15.GL_STREAM_DRAW;
 import static org.lwjgl.opengl.GL15.glBindBuffer;
 import static org.lwjgl.opengl.GL15.glBufferData;
 import static org.lwjgl.opengl.GL15.glGenBuffers;
@@ -38,8 +37,11 @@ import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
 import static org.lwjgl.opengl.GL20.glGetProgrami;
 import static org.lwjgl.opengl.GL20.glGetShaderInfoLog;
 import static org.lwjgl.opengl.GL20.glGetShaderi;
+import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glLinkProgram;
 import static org.lwjgl.opengl.GL20.glShaderSource;
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20.glUniform2f;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
@@ -48,7 +50,6 @@ import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,13 +63,12 @@ import org.lwjgl.opengl.DisplayMode;
 import utility.Log;
 import utility.TXTReader;
 
-
-public class MovingTheVertices {
+public class VertCalcOffset {
 
   // Whether to enable VSync in hardware.
   public static final boolean VSYNC = true;
-  public static final String vertexShaderFilePath = "Data/tut03/vertexShader.txt";
-  public static final String fragShaderFilePath = "Data/tut03/fragmentShader.txt";
+  public static final String vertexShaderFilePath = "/Data/tut03/offsetComputingVertexShader.txt";
+  public static final String fragShaderFilePath = "/Data/tut03/fragmentShader.txt";
 
   // Width and height of our window
   public static final int WIDTH = 800;
@@ -83,9 +83,9 @@ public class MovingTheVertices {
   private long startTime = 0;
   private long elapsedTime = 0;
   private long lastTime = 0;
-  
+
   public static void main(String[] args) throws LWJGLException {
-	new MovingTheVertices().start();
+	new VertCalcOffset().start();
   }
 
   // Start our game
@@ -215,15 +215,15 @@ public class MovingTheVertices {
 	0.0f,    0.5f, 0.0f, 1.0f,
 	0.5f, -0.366f, 0.0f, 1.0f,
 	-0.5f, -0.366f, 0.0f, 1.0f,
-	//	-1f,    0f, 0.0f, 1.0f,
-	//	-0.5f, 0f, 0.0f, 1.0f,
-	//	-0.5f, 0.5f, 0.0f, 1.0f,
-	//	1.0f,    0.0f, 0.0f, 1.0f,
-	//	0.0f,    1.0f, 0.0f, 1.0f,
-	//	0.0f,    0.0f, 1.0f, 1.0f,
-	//	1.0f,    0.0f, 0.0f, 1.0f,
-	//	0.0f,    1.0f, 0.0f, 1.0f,
-	//	0.0f,    0.0f, 1.0f, 1.0f
+	-1f,    0f, 0.0f, 1.0f,
+	-0.5f, 0f, 0.0f, 1.0f,
+	-0.5f, 0.5f, 0.0f, 1.0f,
+	1.0f,    0.0f, 0.0f, 1.0f,
+	0.0f,    1.0f, 0.0f, 1.0f,
+	0.0f,    0.0f, 1.0f, 1.0f,
+	1.0f,    0.0f, 0.0f, 1.0f,
+	0.0f,    1.0f, 0.0f, 1.0f,
+	0.0f,    0.0f, 1.0f, 1.0f
   };
 
   /**
@@ -248,6 +248,9 @@ public class MovingTheVertices {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
+  public int timeLocation;
+  public int offsetLocation2;
+
   /**A program object in OpenGL contains code for all of the shaders to be used for rendering*/
   private void initializeProgram() {
 	List<Integer> shaderList = new ArrayList<Integer>();
@@ -255,12 +258,24 @@ public class MovingTheVertices {
 	shaderList.add(loadShader(GL_VERTEX_SHADER, vertexShaderFilePath));
 	shaderList.add(loadShader(GL_FRAGMENT_SHADER, fragShaderFilePath));
 
-
 	programObject = createProgram(shaderList);
 
+	/*In order to set a uniform in a program, we need two things. The first is a uniform location. 
+	 * Much like with attributes, there is an index that refers to a specific uniform value. 
+	 * Unlike attributes, you cannot set this location yourself; you must query it.
+	 * */
+	timeLocation = glGetUniformLocation(programObject, "time");
+	offsetLocation2 = glGetUniformLocation(programObject, "offset2");
+
+	int loopDurationLocation = glGetUniformLocation(programObject, "loopDuration");
+	glUseProgram(programObject);
+	glUniform1f(loopDurationLocation, 5.0f);
+	
 	for(Integer entry : shaderList){
 	  glDeleteShader(entry);
 	}
+
+
   }
 
   public int positionBufferObject = 0;
@@ -268,77 +283,37 @@ public class MovingTheVertices {
 
   private void draw(){
 
-	float[] offset = {0.0f,0.0f};
-	offset = computePositionOffsets(offset[0], offset[1]);
-	 
-	adjustVertexData(offset[0], offset[1]);
-
 	glClearColor(0f, 0f, 0f, 0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(programObject);
 
+	glUniform1f(timeLocation, elapsedTime/1000f);
+	glUniform2f(offsetLocation2, 0.3f,0f);
+
 	glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject);
 	glEnableVertexAttribArray(0);
-	//	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(0, 4, GL_FLOAT, false, 0, 0);
-	//	glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, 96);
+	glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, 96);
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-	//	glDrawArrays(GL_TRIANGLES, 3, 3);
+	glDrawArrays(GL_TRIANGLES, 3, 3);
 
 	glDisableVertexAttribArray(0);
-	//	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(1);
 	glUseProgram(0);
 
-  }
-
-  private float[] computePositionOffsets(float fXOffset, float fYOffset){
-	final float fLoopDuration = 5.0f;
-	final float fScale = 3.14159f * 2.0f / fLoopDuration;
-
-	float fElapsedTime = elapsedTime/ 1000.0f;
-
-	float fCurrTimeThroughLoop = fElapsedTime % fLoopDuration;
-	fXOffset = (float)Math.cos(fCurrTimeThroughLoop * fScale) * 0.5f;
-	fYOffset = (float)Math.sin(fCurrTimeThroughLoop * fScale) * 0.5f;
-	
-	float[] output = {fXOffset,fYOffset};
-	return output;
-  }
-
-  private void adjustVertexData(float fXOffset, float fYOffset){
-	float[] fNewData = new float[vertexPositions.length];
-	fNewData = vertexPositions.clone();
-
-	for(int i = 0; i < vertexPositions.length; i += 4){
-	  fNewData[i] += fXOffset;
-	  fNewData[i+1] += fYOffset;
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject);
-
-	FloatBuffer buf = BufferUtils.createFloatBuffer(fNewData.length);
-	for(float i : fNewData){
-	  buf.put(i);
-	}
-	buf.position(0);
-
-	glBufferSubData(GL_ARRAY_BUFFER, 0, buf);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   private int loadShader(int eShaderType, final String filename){
 	String shaderData = "";
 	try {
-	  TXTReader reader = new TXTReader(filename);
+	  TXTReader reader = new TXTReader(filename);	  
 	  shaderData = reader.getInputAsOneStringRetainLineBreaker();
 	} catch (FileNotFoundException e) {
 	  e.printStackTrace();
 	} catch (IOException e) {
-	  e.printStackTrace();
-	} catch (URISyntaxException e) {
 	  e.printStackTrace();
 	}
 

@@ -1,4 +1,4 @@
-package game;
+package tutorials.chapter2;
 
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -64,8 +64,8 @@ public class PlayWithColors {
 
   // Whether to enable VSync in hardware.
   public static final boolean VSYNC = true;
-  public static final String vertexShaderFilePath = "Data/tut02/vertexShader.txt";
-  public static final String fragShaderFilePath = "Data/tut02/fragmentShader.txt";
+  public static final String vertexShaderFilePath = "/Data/tut02/vertexShader.txt";
+  public static final String fragShaderFilePath = "/Data/tut02/fragmentShader.txt";
 
   // Width and height of our window
   public static final int WIDTH = 800;
@@ -372,8 +372,6 @@ public class PlayWithColors {
 	} catch (FileNotFoundException e) {
 	  e.printStackTrace();
 	} catch (IOException e) {
-	  e.printStackTrace();
-	} catch (URISyntaxException e) {
 	  e.printStackTrace();
 	}
 

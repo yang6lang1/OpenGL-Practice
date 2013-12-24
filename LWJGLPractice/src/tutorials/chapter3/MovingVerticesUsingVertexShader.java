@@ -1,4 +1,4 @@
-package game;
+package tutorials.chapter3;
 
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -49,7 +49,6 @@ import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +67,7 @@ public class MovingVerticesUsingVertexShader {
   // Whether to enable VSync in hardware.
   public static final boolean VSYNC = true;
   public static final String vertexShaderFilePath = "/Data/tut03/offsetVertexShader.txt";
-  public static final String fragShaderFilePath = "/DataData/tut03/fragmentShader.txt";
+  public static final String fragShaderFilePath = "/Data/tut03/fragmentShader.txt";
 
   // Width and height of our window
   public static final int WIDTH = 800;
@@ -322,13 +321,10 @@ public class MovingVerticesUsingVertexShader {
   private int loadShader(int eShaderType, final String filename){
 	String shaderData = "";
 	try {
-	  TXTReader reader = new TXTReader(filename);
-	  shaderData = reader.getInputAsOneStringRetainLineBreaker();
+	  TXTReader reader = new TXTReader(filename);	  shaderData = reader.getInputAsOneStringRetainLineBreaker();
 	} catch (FileNotFoundException e) {
 	  e.printStackTrace();
 	} catch (IOException e) {
-	  e.printStackTrace();
-	} catch (URISyntaxException e) {
 	  e.printStackTrace();
 	}
 

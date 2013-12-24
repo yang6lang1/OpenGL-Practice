@@ -14,6 +14,5 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jars/slick-util.jar"/>
-	<classpathentry kind="lib" path="Data"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

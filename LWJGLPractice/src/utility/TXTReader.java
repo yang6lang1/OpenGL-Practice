@@ -1,21 +1,23 @@
 package utility;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
+/**
+ * Text reader: save to be used for project deployment.
+ * */
 public class TXTReader {
-
+  
   private String filename;
   private BufferedReader reader;
   
-  public TXTReader(String filename) throws FileNotFoundException, URISyntaxException{
+  public TXTReader(String filename) throws FileNotFoundException{
 	this.filename = filename;
-	Log.p(""+getClass().getResource(filename).toString());
-	reader = new BufferedReader(new FileReader(new File(getClass().getResource(filename).toURI())));
+	InputStream in = getClass().getResourceAsStream(filename);
+	reader = new BufferedReader(new InputStreamReader(in));
   }
   
   public String getInputAsOneString() throws IOException{
