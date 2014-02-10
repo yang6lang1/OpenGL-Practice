@@ -314,7 +314,7 @@ public class PlayWithColors {
 	 * (reference to vertexPositions array)
 	 * glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long buffer_buffer_offset);
 	 * index: Vertex attribute index
-	 * size: how many of these values represent a single pieve of data. In this case, that is 4.
+	 * size: how many of these values represent a single piece of data. In this case, that is 4.
 	 * type: the base type of the value. In this case, GL_FLOAT, which = 32-bit floating-point value
 	 * normalized:
 	 * stride: this specifies the spacing between each set of values. In our case, it's 0.
