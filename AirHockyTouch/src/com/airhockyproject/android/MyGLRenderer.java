@@ -8,6 +8,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.opengl.GLES20;
 import android.opengl.GLSurfaceView.Renderer;
 
 import com.airhockyproject.android.objects.Mallet;
@@ -62,6 +63,9 @@ public class MyGLRenderer implements Renderer {
 	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+		GLES20.glDepthFunc(GLES20.GL_LESS);
+
 		table = new Table();
 		mallet = new Mallet(0.08f, 0.15f, 32);
 		puck = new Puck(0.06f, 0.02f, 32);
@@ -88,7 +92,7 @@ public class MyGLRenderer implements Renderer {
 	@Override
 	public void onDrawFrame(GL10 glUnused) {
 		// Clear the rendering surface.
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
 		// Multiply the view and projection matrices together.
 		multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
