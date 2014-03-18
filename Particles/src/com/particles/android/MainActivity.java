@@ -8,9 +8,12 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
 import android.widget.Toast;
 
-public class ParticlesActivity extends Activity {
+public class MainActivity extends Activity {
 
 	private GLSurfaceView glSurfaceView;
 	private boolean rendererSet = false;
