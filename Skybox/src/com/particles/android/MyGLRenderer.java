@@ -46,19 +46,26 @@ public class MyGLRenderer implements Renderer {
 	@Override
 	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		
+
 		glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);
-    
+		glBlendFunc(GL_ONE, GL_ONE);
+
 		particleProgram = new ParticleShaderProgram(context); 
 		particleSystem = new ParticleSystem(10000); 
 		globalStartTime = System.nanoTime();
 		particleTexture = TextureHelper.loadTexture(context, R.drawable.particle_texture);
 
+		skyboxProgram = new SkyboxShaderProgram(context);
+		skybox = new Skybox();
+		skyboxTexture = TextureHelper.loadCubeMap(context, new int[]{
+				R.drawable.left, R.drawable.right,
+				R.drawable.bottom, R.drawable.top,
+				R.drawable.front, R.drawable.back});
+
 		final Vector particleDirection = new Vector(0f, 0.5f, 0f);
 		final float angleVarianceInDegrees = 5f;
 		final float speedVariance = 1f;
-		
+
 		redParticleShooter = new ParticleShooter( new Point(-1f, 0f, 0f), particleDirection,
 				Color.rgb(255, 50, 5), angleVarianceInDegrees, speedVariance);
 
@@ -76,10 +83,6 @@ public class MyGLRenderer implements Renderer {
 
 		MatrixHelper.perspectiveM(projectionMatrix, 45, (float) width
 				/ (float) height, 1f, 10f);
-		setIdentityM(viewMatrix, 0);
-		translateM(viewMatrix, 0, 0f, -1.5f, -5f);
-		multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0,
-				viewMatrix, 0);
 	}
 
 
@@ -88,16 +91,38 @@ public class MyGLRenderer implements Renderer {
 		// Clear the rendering surface.
 		glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 		
+		drawSkybox();
+		drawParticles();
+	}
+	
+	private void drawSkybox(){
+		setIdentityM(viewMatrix, 0);
+		multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+		skyboxProgram.useProgram();
+		skyboxProgram.setUniforms(viewProjectionMatrix, skyboxTexture);
+		skybox.bindData(skyboxProgram);
+		skybox.draw();
+	}
+	
+	private void drawParticles(){
 		float currentTime = (System.nanoTime() - globalStartTime) / 1000000000f;
-		
-    redParticleShooter.addParticles(particleSystem, currentTime, 5);
-    greenParticleShooter.addParticles(particleSystem, currentTime, 5);
-    blueParticleShooter.addParticles(particleSystem, currentTime, 5);
-    
-    particleProgram.useProgram();
-    particleProgram.setUniforms(viewProjectionMatrix, currentTime, particleTexture);
-    particleSystem.bindData(particleProgram);
-    particleSystem.draw();
 
+		redParticleShooter.addParticles(particleSystem, currentTime, 1);
+		greenParticleShooter.addParticles(particleSystem, currentTime, 1);
+		blueParticleShooter.addParticles(particleSystem, currentTime, 1);
+
+		setIdentityM(viewMatrix, 0);
+		translateM(viewMatrix, 0, 0f, -1.5f, -5f);
+		multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+		
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE,GL_ONE);
+		
+		particleProgram.useProgram();
+		particleProgram.setUniforms(viewProjectionMatrix, currentTime, particleTexture);
+		particleSystem.bindData(particleProgram);
+		particleSystem.draw();
+		
+		glDisable(GL_BLEND);
 	}
 }
