@@ -15,16 +15,16 @@ public class Skybox {
 
 	public Skybox(){
 		// Create a unit cube
-		vertexArray = new VertexArray(new float[] {
-				-1,  1,  1,		// (0) Top-left near
-				1,  1,  1,		// (1) Top-right near
-				-1, -1,  1,		// (2) Bottom-left near
-				1, -1,  1,		// (3) Bottom-right near
-				-1,  1, -1,		// (4) Top-left far
-				1,  1, -1,		// (5) Top-right far
-				-1, -1, -1,		// (6) Bottom-left far
-				1, -1, -1			// (7) Bottom-right far
-		});
+    vertexArray = new VertexArray(new float[] {
+        -1,  1,  1,     // (0) Top-left near
+         1,  1,  1,     // (1) Top-right near
+        -1, -1,  1,     // (2) Bottom-left near
+         1, -1,  1,     // (3) Bottom-right near
+        -1,  1, -1,     // (4) Top-left far
+         1,  1, -1,     // (5) Top-right far
+        -1, -1, -1,     // (6) Bottom-left far
+         1, -1, -1      // (7) Bottom-right far                        
+    });
 
 		// 6 indices per cube side
 		indexArray =  ByteBuffer.allocateDirect(6 * 6)

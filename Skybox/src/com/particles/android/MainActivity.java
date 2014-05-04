@@ -37,12 +37,12 @@ public class MainActivity extends Activity {
 
 		glSurfaceView = new GLSurfaceView(this);
 
-		final MyGLRenderer airHockyRenderer = new MyGLRenderer(this);
-		
+		final MyGLRenderer skyboxRenderer = new MyGLRenderer(this);
+
 		if (supportsEs2) {
 			//An activity is an Android Context, so we pass in a reference to this
 			glSurfaceView.setEGLContextClientVersion(2);
-			glSurfaceView.setRenderer(airHockyRenderer);
+			glSurfaceView.setRenderer(skyboxRenderer);
 			rendererSet = true; 
 		} 
 		else {
@@ -50,7 +50,38 @@ public class MainActivity extends Activity {
 			Toast.makeText(this, "This device does not support OpenGL ES 2.0.", Toast.LENGTH_LONG).show();
 			return; 
 		}
-		
+
+		glSurfaceView.setOnTouchListener(new OnTouchListener(){
+			float previousX, previousY;
+
+			public boolean onTouch(View v, MotionEvent event){
+				if(event != null){
+					if(event.getAction() == MotionEvent.ACTION_DOWN){
+						previousX = event.getX();
+						previousY = event.getY();
+					}
+					else if(event.getAction() == MotionEvent.ACTION_MOVE){
+						final float deltaX = event.getX() - previousX;
+						final float deltaY = event.getY() - previousY;
+
+						previousX = event.getX();
+						previousY = event.getY();
+
+						glSurfaceView.queueEvent(new Runnable(){
+							public void run(){
+								skyboxRenderer.handleTouchDrag(deltaX, deltaY);
+							}
+						});
+					}
+
+					return true;
+				}
+				else{
+					return false;
+				}
+			}
+		});
+
 		setContentView(glSurfaceView);
 	}
 
@@ -66,10 +97,10 @@ public class MainActivity extends Activity {
 			glSurfaceView.onPause();
 		}
 	}
-	
+
 	public void onResume(){
 		super.onResume();
-		
+
 		if(rendererSet){
 			glSurfaceView.onResume();
 		}
