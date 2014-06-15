@@ -6,13 +6,27 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+	android:orientation="vertical"
     tools:context=".Main" >
 
     <TextView
         android:id="@+id/textview1"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="20dp"
-        android:text="@string/hello_world" />
+        android:text="@string/Chapter_one_book_LearnOpenGLES_label" />
+    <Button android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:text="@string/preview_button_text"
+			android:onClick="button1click" />
 
+    <TextView
+        android:id="@+id/textview2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Tut02FirstTriangle" />
+    <Button android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:text="@string/preview_button_text"
+			android:onClick="tut02ButtonClick" />
+    
 </LinearLayout>

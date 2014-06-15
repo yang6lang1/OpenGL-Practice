@@ -22,6 +22,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.example.learnopengles.LearnOpenGLESCH1.LearnOpenGLESCH1Activity"
+            android:label="@string/title_activity_learn_open_glesch1"
+            android:parentActivityName="com.example.learnopengles.Main" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.learnopengles.Main" />
+        </activity>
+        <activity
+            android:name="com.example.learnopengles.tut02.FirstTriangleActivity"
+            android:label="@string/title_activity_first_triangle" >
+        </activity>
     </application>
 
 </manifest>
