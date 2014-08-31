@@ -21,8 +21,8 @@ public class FirstTriangleProgram extends ShaderProgram{
 	}
 	
 	/**Supply the color array consists of 3 float numbers: r, g, b*/
-	public void setColor(float[] color){
-		glUniform3f(uColorLocation, color[0], color[1], color[2]);
+	public void setColor(float r, float g, float b){
+		glUniform4f(uColorLocation, r, g, b, 1f);
 	}
 	
 	public int getPositionAttributeLocation(){
