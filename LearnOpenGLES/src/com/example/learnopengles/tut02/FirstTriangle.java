@@ -15,16 +15,15 @@ public class FirstTriangle {
 	
 	private static final int STRIDE = TOTAL_COMPONENT_COUNT * Constants.BYTES_PER_FLOAT;
 
-	private final float[] triangles;
+	private final float[] triangles = {
+			-1.0f, -1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			0.0f, 1.0f, 0.0f
+		};
 		
 	private final VertexArray vertexArray;
 	
 	public FirstTriangle(){
-		triangles = new float[] {
-				-0.5f, -0.5f, 0.0f,
-				0.5f, -0.5f, 0.0f,
-				0.0f, 1.0f, 0.0f
-			};
 		vertexArray = new VertexArray(triangles);
 	}
 	
